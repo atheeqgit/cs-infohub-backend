@@ -1,0 +1,70 @@
+#TODOS
+ - add the mazen suggested updates , like student achivements , (research)ect..
+ - check all the incoming fields 
+ - make the routes shorter
+ - setup cloudinary for all the routes
+
+
+AUTHs
+ DONE - create register SuperAdmin (comment and save)
+ DONE - create login admin / SuperAdmin
+ DONE - create register admin (only by superAdmin)
+ DONE - create delete admin (only by superAdmin)
+
+ O - change the register SuperAdmin to be multiple (super admin already exists);
+
+ O - create update admin/superAdmin (only by superAdmin)
+ O - create Changes done by admins/superAdmin - decide to include on the Admin Schema or not and the viewabilities
+
+
+ done - slight bug while creating/adding - the OBJ id is not returning
+
+HOME 
+ done - create/add dept pages (OSA)
+ done - get dept pages by id (everyone)
+ done - update dept pages (OA/SA)
+ done - delete dept pages (OSA)
+ setup cloudinary
+
+  about
+      done add about 
+      done update about  
+
+  done - test - update programe - 
+      - add / update - BG
+      - add about 
+      - update about  
+      setup cloudinary
+
+  gallery 
+    DONE - add/create
+    DONE - update 
+    DONE - delete
+    - Add many
+    setup cloudinary
+
+   faculty 
+    done - add/create
+    done - update 
+    done - delete
+    - Add many
+    done - setup cloudinary
+
+
+  infrastructure 
+    done - add/create
+    done - update 
+    done - delete
+    - Add many
+    setup cloudinary
+
+
+  career 
+    O - add/create
+    O - update 
+    O - delete
+    - Add many
+    setup cloudinary
+
+
+   

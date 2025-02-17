@@ -10,6 +10,7 @@ import facultyRoute from "./routes/facultyRoutes.js";
 import infrastructureRoute from "./routes/infrastructureRoutes.js";
 import careerRoute from "./routes/careerRoutes.js";
 import aboutRoute from "./routes/aboutRoutes.js";
+import programsRoute from "./routes/programsRoutes.js";
 
 dotenv.config();
 
@@ -23,11 +24,12 @@ app.use(express.json());
 // Routes
 app.use("/api/auth", authRoute);
 app.use("/api/department", departmentRoute);
-app.use("/api/events", eventRoute);
+app.use("/api/about", aboutRoute);
 app.use("/api/faculty", facultyRoute);
+app.use("/api/programs", programsRoute);
+app.use("/api/events", eventRoute);
 app.use("/api/infrastructure", infrastructureRoute);
 app.use("/api/career", careerRoute);
-app.use("/api/about", aboutRoute);
 
 mongoose
   .connect(process.env.MONGODB_URI)

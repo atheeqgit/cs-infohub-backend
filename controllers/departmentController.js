@@ -3,6 +3,7 @@ import {
   getBodyWithFiles,
   getUpdatedBodyWithFiles,
   deleteCloudFiles,
+  deleteUploadsIfFailed,
 } from "../utilities/helpers.js";
 
 import Faculty from "../models/Faculty.js";
@@ -52,13 +53,15 @@ export const getDepartment = async (req, res) => {
 
 export const getAllData = async (req, res) => {
   const { deptID, type } = req.params;
-  if (
-    type !== "ProgramsData" ||
-    type !== "facultyData" ||
-    type !== "eventsData" ||
-    type !== "infrastructureData" ||
-    type !== "careerData"
-  ) {
+
+  const typeArray = [
+    "programsData",
+    "facultyData",
+    "eventsData",
+    "infrastructureData",
+    "careerData",
+  ];
+  if (!typeArray.includes(type)) {
     return res.status(400).json({
       error: "the Type pram is invalid",
     });
@@ -72,19 +75,19 @@ export const getAllData = async (req, res) => {
     }
 
     if (type == "programsData") {
-      data[type] = await Program.find({ deptID: department._id });
+      data[type] = await Program.find({ deptID });
     }
     if (type == "facultyData") {
-      data[type] = await Faculty.find({ deptID: department._id });
+      data[type] = await Faculty.find({ deptID });
     }
     if (type == "eventsData") {
-      data[type] = await Event.find({ deptID: department._id });
+      data[type] = await Event.find({ deptID });
     }
     if (type == "infrastructureData") {
-      data[type] = await Infrastructure.find({ deptID: department._id });
+      data[type] = await Infrastructure.find({ deptID });
     }
     if (type == "careerData") {
-      data[type] = await Career.find({ deptID: department._id });
+      data[type] = await Career.find({ deptID });
     }
 
     res.status(200).json(data);
@@ -92,50 +95,44 @@ export const getAllData = async (req, res) => {
     res.status(500).json({ error: "Error Getting All data: " + err.message });
   }
 };
+
 export const createDepartment = async (req, res) => {
-  const { pathName, deptName, snippetData, about } = req.body;
-
-  console.log(req.body);
-
-  if (
-    !pathName ||
-    !deptName ||
-    !snippetData ||
-    // snippetData?.studentsCount === undefined ||
-    // snippetData?.staffsCount === undefined ||
-    // snippetData?.alumniCount === undefined ||
-    !about ||
-    !about.length
-  ) {
-    return res.status(400).json({
-      error: "One or more required fields are missing or invalid.",
-    });
-  }
-
+  console.log("Before try block");
   try {
+    console.log("Entering try block");
+
+    const { pathName, deptName, snippetData, about } = req.body;
+
+    if (!pathName || !deptName || !snippetData || !about || !about.length) {
+      throw new Error("One or more required fields are missing or invalid.");
+    }
     // Validate path first
     const pathExists = await Department.findOne({ pathName });
     if (pathExists) {
-      return res.status(400).json({ error: "Path name already exists!" });
+      throw new Error("Path name already exists!");
     }
 
     // Validate department name
     const deptExists = await Department.findOne({ deptName });
     if (deptExists) {
-      return res.status(400).json({ error: "Department already exists!" });
+      throw new Error("Department already exists!");
     }
 
     const data = getBodyWithFiles(req);
-    const snippetData =
+    const snippData =
       typeof data.snippetData === "string"
         ? JSON.parse(data.snippetData)
         : data.snippetData;
 
-    const about = !Array.isArray(data.about)
+    const abt = !Array.isArray(data.about)
       ? JSON.parse(data.about)
       : data.about;
     // Create new department
-    const newDept = new Department({ ...data, snippetData, about });
+    const newDept = new Department({
+      ...data,
+      snippetData: snippData,
+      about: abt,
+    });
     await newDept.save();
 
     return res.status(201).json({
@@ -143,11 +140,10 @@ export const createDepartment = async (req, res) => {
       data: newDept,
     });
   } catch (err) {
-    console.error(err.message);
+    console.log("Inside catch block", err);
+    await deleteUploadsIfFailed(req);
     res.status(500).json({
-      error:
-        "An error occurred while creating department home content: " +
-        err.message,
+      error: "An error creating department:" + err.message,
     });
   }
 };
@@ -160,7 +156,7 @@ export const updateDepartment = async (req, res) => {
     const deptExists = await Department.findOne({ pathName });
 
     if (!deptExists) {
-      return res.status(404).json({ error: "Department not found" });
+      throw new Error("Department not found");
     }
 
     const updateData = await getUpdatedBodyWithFiles(req, deptExists);
@@ -176,6 +172,7 @@ export const updateDepartment = async (req, res) => {
       data: updatedDept,
     });
   } catch (err) {
+    await deleteUploadsIfFailed(req);
     res
       .status(500)
       .json({ error: "catch - Error updating department: " + err.message });
@@ -184,16 +181,51 @@ export const updateDepartment = async (req, res) => {
 
 export const deleteDepartment = async (req, res) => {
   try {
-    const { id } = req.params; // Extract pathName from URL
+    const { id } = req.params; // Department ID
 
     const deptExists = await Department.findById(id);
-
-    if (!deptExists)
+    if (!deptExists) {
       return res.status(400).json({ error: "Department not found" });
+    }
 
-    let fieldNames = ["deptIcon", "facultyBG", "eventsBG", "programmeBG"];
-    await deleteCloudFiles(fieldNames, deptExists);
+    // Delete Department-specific Cloudinary files
+    let deptFields = ["deptIcon", "facultyBG", "eventsBG", "aboutBG"];
+    await deleteCloudFiles(deptFields, deptExists);
 
+    // Fetch all related documents
+    const [faculties, events, infrastructures, careers] = await Promise.all([
+      Faculty.find({ deptID: id }),
+      Event.find({ deptID: id }),
+      Infrastructure.find({ deptID: id }),
+      Career.find({ deptID: id }),
+    ]);
+
+    // Function to extract and delete images
+    const deleteRelatedImages = async (items, fields) => {
+      for (const item of items) {
+        console.log(item, fields);
+        await deleteCloudFiles(fields, item);
+      }
+    };
+
+    // Delete images from Cloudinary
+    await Promise.all([
+      deleteRelatedImages(faculties, ["imgSrc", "pdfSrc"]),
+      deleteRelatedImages(events, ["imgSrc"]),
+      deleteRelatedImages(infrastructures, ["imgSrc"]),
+      deleteRelatedImages(careers, ["imgSrc"]),
+    ]);
+
+    // Delete all related records
+    await Promise.all([
+      Faculty.deleteMany({ deptID: id }),
+      Event.deleteMany({ deptID: id }),
+      Program.deleteMany({ deptID: id }),
+      Infrastructure.deleteMany({ deptID: id }),
+      Career.deleteMany({ deptID: id }),
+    ]);
+
+    // Delete the department
     await Department.findByIdAndDelete(id);
 
     res.status(200).json({
@@ -202,6 +234,6 @@ export const deleteDepartment = async (req, res) => {
   } catch (err) {
     res
       .status(500)
-      .json({ error: "catch - Error Deleting department: " + err.message });
+      .json({ error: "Error deleting department: " + err.message });
   }
 };

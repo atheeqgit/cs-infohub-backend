@@ -4,6 +4,7 @@ import {
   getBodyWithFiles,
   deleteCloudFiles,
   getUpdatedBodyWithFiles,
+  deleteUploadsIfFailed,
 } from "../utilities/helpers.js";
 
 // 🆕 CREATE CAREER
@@ -11,15 +12,12 @@ export const addCareer = async (req, res) => {
   const { deptID } = req.params; // Extract department ID
 
   if (!req.body.careerTitle) {
-    return res
-      .status(400)
-      .json({ error: "Required fields are missing or invalid." });
+    throw new Error("Required fields are missing or invalid.");
   }
   try {
     // Check if the department exists
     const department = await Department.findById(deptID);
-    if (!department)
-      return res.status(404).json({ error: "Department not found" });
+    if (!department) throw new Error("Department not found");
 
     const data = await getBodyWithFiles(req);
 
@@ -32,6 +30,7 @@ export const addCareer = async (req, res) => {
       data: newCareer,
     });
   } catch (error) {
+    await deleteUploadsIfFailed(req);
     res.status(500).json({ error: "Error adding career: " + error.message });
   }
 };
@@ -41,7 +40,7 @@ export const updateCareer = async (req, res) => {
 
   try {
     const career = await Career.findById(id);
-    if (!career) return res.status(404).json({ error: "Career not found" });
+    if (!career) throw new Error("Career not found");
 
     // Process updated files and delete old ones from Cloudinary
     const updatedData = await getUpdatedBodyWithFiles(req, career);
@@ -58,6 +57,7 @@ export const updateCareer = async (req, res) => {
       data: updatedCareer,
     });
   } catch (error) {
+    await deleteUploadsIfFailed(req);
     res.status(500).json({ error: "Error updating career: " + error.message });
   }
 };
@@ -68,8 +68,7 @@ export const deleteCareer = async (req, res) => {
 
   try {
     const career = await Career.findById(id);
-    if (!career) return res.status(404).json({ error: "Career not found" });
-
+    if (!career) throw new Error("Career not found");
     // Delete Cloudinary files
     let fieldNames = ["imgSrc"];
     await deleteCloudFiles(fieldNames, career);

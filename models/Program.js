@@ -6,7 +6,6 @@ const ProgramSchema = new Schema({
   title: { type: String, required: true, maxLength: 100 },
   programType: {
     type: String,
-    enum: ["under Graduate", "post Graduate", "phd", "mphil", "other"],
     required: true,
   },
   aboutProgram: [{ type: String, required: true }],

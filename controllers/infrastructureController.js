@@ -4,6 +4,7 @@ import {
   getBodyWithFiles,
   deleteCloudFiles,
   getUpdatedBodyWithFiles,
+  deleteUploadsIfFailed,
 } from "../utilities/helpers.js";
 
 // 🆕 CREATE INFRASTRUCTURE
@@ -11,15 +12,12 @@ export const addInfrastructure = async (req, res) => {
   const { deptID } = req.params; // Extract department ID
 
   if (!req.body.name || !req.body.about || !req.body.code) {
-    return res
-      .status(400)
-      .json({ error: "Required fields are missing or invalid." });
+    throw new Error("Required fields are missing or invalid.");
   }
   try {
     // Check if the department exists
     const department = await Department.findById(deptID);
-    if (!department)
-      return res.status(404).json({ error: "Department not found" });
+    if (!department) throw new Error("Department not found");
 
     const data = await getBodyWithFiles(req);
 
@@ -32,6 +30,7 @@ export const addInfrastructure = async (req, res) => {
       data: newInfrastructure,
     });
   } catch (error) {
+    await deleteUploadsIfFailed(req);
     res
       .status(500)
       .json({ error: "Error adding infrastructure: " + error.message });
@@ -43,8 +42,7 @@ export const updateInfrastructure = async (req, res) => {
 
   try {
     const infrastructure = await Infrastructure.findById(id);
-    if (!infrastructure)
-      return res.status(404).json({ error: "Infrastructure not found" });
+    if (!infrastructure) throw new Error("Infrastructure not found");
 
     // Process updated files and delete old ones from Cloudinary
     const updatedData = await getUpdatedBodyWithFiles(req, infrastructure);
@@ -61,6 +59,7 @@ export const updateInfrastructure = async (req, res) => {
       data: updatedInfrastructure,
     });
   } catch (error) {
+    await deleteUploadsIfFailed(req);
     res
       .status(500)
       .json({ error: "Error updating infrastructure: " + error.message });
@@ -73,8 +72,7 @@ export const deleteInfrastructure = async (req, res) => {
 
   try {
     const infrastructure = await Infrastructure.findById(id);
-    if (!infrastructure)
-      return res.status(404).json({ error: "Infrastructure not found" });
+    if (!infrastructure) throw new Error("Infrastructure not found");
 
     // Delete Cloudinary files
     let fieldNames = ["imgSrc"];

@@ -11,7 +11,7 @@ const EventSchema = new Schema({
     enum: ["Seminars", "Culturals", "Events", "other"],
     required: true,
   },
-  aboutEvent: { type: String, required: true, maxLength: 200 },
+  aboutEvent: { type: String, required: true, maxLength: 500 },
   imgSrc: SrcSchema,
   imgType: { type: String, enum: ["Portrait", "Landscape"], required: true },
   showOnHome: { type: Boolean, default: false },

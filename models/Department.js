@@ -22,38 +22,8 @@ const DepartmentSchema = new Schema(
     },
     about: [{ type: String }], // About section paragraphs
     facultyBG: SrcSchema, // Background image for programmes section
-    facultyData: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Faculty",
-      },
-    ], // Faculty details
     eventsBG: SrcSchema, // Background image for programmes section
-    eventsData: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Events",
-      },
-    ], // List of Events
-    programmeBG: SrcSchema, // Background image for programmes section
-    programsData: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Programs",
-      },
-    ], // List of programs
-    infrastructureData: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Infras",
-      },
-    ], // Labs and facilities
-    careerData: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Careers",
-      },
-    ], // Labs and facilities
+    aboutBG: SrcSchema, // Background image for programmes section
   },
   { timestamps: true }
 );

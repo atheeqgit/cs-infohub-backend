@@ -16,12 +16,14 @@ export const addProgram = async (req, res) => {
       .json({ error: "Required fields are missing or invalid." });
   }
   try {
+    // const aboutProgram = !Array.isArray(req.body.aboutProgram)
+    //   ? JSON.parse(req.body.aboutProgram)
+    //   : req.body.aboutProgram;
+
     // Check if the department exists
     const department = await Department.findById(deptID);
     if (!department)
       return res.status(404).json({ error: "Department not found" });
-
-    // const data = await getBodyWithFiles(req);
 
     const newProgram = new Program({ ...req.body, deptID });
 
@@ -43,7 +45,6 @@ export const updateProgram = async (req, res) => {
     const program = await Program.findById(id);
     if (!program) return res.status(404).json({ error: "Program not found" });
 
-    // Process updated files and delete old ones from Cloudinary
     const updatedData = req.body;
 
     // Update program record

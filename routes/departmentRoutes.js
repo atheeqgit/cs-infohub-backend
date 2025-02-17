@@ -17,12 +17,7 @@ const router = express.Router();
 router.get("/home/:pathName", getDepartment);
 
 // getting all data of singly type by the department    EG: all faculty belongs to the department ... ect
-router.get(
-  "/getAllData/:deptID/:type",
-  authenticate,
-  authorize(["superAdmin", "admin"]),
-  getAllData
-);
+router.get("/getAllData/:deptID/:type", getAllData);
 
 // create department route
 router.post(

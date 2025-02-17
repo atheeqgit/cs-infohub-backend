@@ -5,28 +5,25 @@ import {
   getBodyWithFiles,
   deleteCloudFiles,
   getUpdatedBodyWithFiles,
+  deleteUploadsIfFailed,
 } from "../utilities/helpers.js";
 
 // 🆕 CREATE FACULTY
 export const addFaculty = async (req, res) => {
   const { deptID } = req.params; // Extract department ID
 
-  if (
-    !req.body.name ||
-    !req.body.designation ||
-    !req.body.education ||
-    !req.body.shift
-  ) {
-    return res
-      .status(400)
-      .json({ error: "One or more required fields are missing or invalid." });
-  }
-
   try {
+    if (
+      !req.body.name ||
+      !req.body.designation ||
+      !req.body.education ||
+      !req.body.shift
+    ) {
+      throw new Error("One or more required fields are missing or invalid.");
+    }
     // Check if the department exists
     const department = await Department.findById(deptID);
-    if (!department)
-      return res.status(404).json({ error: "Department not found" });
+    if (!department) throw new Error("Department not found");
 
     const data = await getBodyWithFiles(req);
 
@@ -39,6 +36,7 @@ export const addFaculty = async (req, res) => {
       data: newFaculty,
     });
   } catch (error) {
+    await deleteUploadsIfFailed(req);
     res.status(500).json({ error: "Error adding faculty: " + error.message });
   }
 };
@@ -48,7 +46,7 @@ export const updateFaculty = async (req, res) => {
 
   try {
     const faculty = await Faculty.findById(facultyID);
-    if (!faculty) return res.status(404).json({ error: "Faculty not found" });
+    if (!faculty) throw new Error("Faculty not found");
 
     // Process updated files and delete old ones from Cloudinary
     const updatedData = await getUpdatedBodyWithFiles(req, faculty);
@@ -65,6 +63,7 @@ export const updateFaculty = async (req, res) => {
       data: updatedFaculty,
     });
   } catch (error) {
+    await deleteUploadsIfFailed(req);
     res.status(500).json({ error: "Error updating faculty: " + error.message });
   }
 };
@@ -75,7 +74,7 @@ export const deleteFaculty = async (req, res) => {
 
   try {
     const faculty = await Faculty.findById(facultyID);
-    if (!faculty) return res.status(404).json({ error: "Faculty not found" });
+    if (!faculty) throw new Error("Faculty not found");
 
     // Delete Cloudinary files
     let fieldNames = ["imgSrc", "pdfSrc"];

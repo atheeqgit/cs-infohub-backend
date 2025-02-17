@@ -4,25 +4,24 @@ import {
   getBodyWithFiles,
   deleteCloudFiles,
   getUpdatedBodyWithFiles,
+  deleteUploadsIfFailed,
 } from "../utilities/helpers.js";
 
 // 🆕 CREATE EVENT
 export const addEvent = async (req, res) => {
-  const { deptID } = req.params; // Extract department ID
-
-  if (
-    !req.body.eventTitle ||
-    !req.body.date ||
-    !req.body.eventType ||
-    !req.body.aboutEvent
-  ) {
-    return res.status(400).json({ error: "Required fields are missing" });
-  }
   try {
+    const { deptID } = req.params; // Extract department ID
+    if (
+      !req.body.eventTitle ||
+      !req.body.date ||
+      !req.body.eventType ||
+      !req.body.aboutEvent
+    ) {
+      throw new Error("Required fields are missing");
+    }
     // Check if the department exists
     const department = await Department.findById(deptID);
-    if (!department)
-      return res.status(404).json({ error: "Department not found" });
+    if (!department) throw new Error("Department not found");
 
     const data = await getBodyWithFiles(req);
 
@@ -35,6 +34,7 @@ export const addEvent = async (req, res) => {
       data: newEvent,
     });
   } catch (error) {
+    await deleteUploadsIfFailed(req);
     res.status(500).json({ error: "Error adding event: " + error.message });
   }
 };
@@ -44,7 +44,7 @@ export const updateEvent = async (req, res) => {
 
   try {
     const event = await Event.findById(id);
-    if (!event) return res.status(404).json({ error: "Event not found" });
+    if (!event) throw new Error("Event not found");
 
     // Process updated files and delete old ones from Cloudinary
     const updatedData = await getUpdatedBodyWithFiles(req, event);
@@ -61,6 +61,7 @@ export const updateEvent = async (req, res) => {
       data: updatedEvent,
     });
   } catch (error) {
+    await deleteUploadsIfFailed(req);
     res.status(500).json({ error: "Error updating event: " + error.message });
   }
 };
@@ -71,7 +72,7 @@ export const deleteEvent = async (req, res) => {
 
   try {
     const event = await Event.findById(id);
-    if (!event) return res.status(404).json({ error: "Event not found" });
+    if (!event) throw new Error("Event not found");
 
     // Delete Cloudinary files
     let fieldNames = ["imgSrc"];

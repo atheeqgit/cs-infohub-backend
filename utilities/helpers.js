@@ -40,6 +40,23 @@ export const getUpdatedBodyWithFiles = async (req, existedData) => {
   return body;
 };
 
+export const deleteUploadsIfFailed = async (req) => {
+  try {
+    const cloudFilesLinks = req.cloudinaryFiles || [];
+
+    if (cloudFilesLinks.length > 0) {
+      const deletePromises = cloudFilesLinks.map((file) =>
+        file.public_id
+          ? deleteFromCloudinary(file.public_id)
+          : Promise.resolve()
+      );
+      await Promise.all(deletePromises); // Run deletions concurrently for efficiency
+    }
+  } catch (error) {
+    console.error("Error deleting uploaded files:", error.message);
+  }
+};
+
 export const deleteCloudFiles = async (fieldNames, existedData) => {
   for (const fieldName of fieldNames) {
     let fileData = existedData?.[fieldName]; // Avoid errors if field doesn't exist

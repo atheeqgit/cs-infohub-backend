@@ -11,6 +11,7 @@ import infrastructureRoute from "./routes/infrastructureRoutes.js";
 import careerRoute from "./routes/careerRoutes.js";
 import aboutRoute from "./routes/aboutRoutes.js";
 import programsRoute from "./routes/programsRoutes.js";
+import eContentRoute from "./routes/econtentRoutes.js";
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ app.use("/api/programs", programsRoute);
 app.use("/api/events", eventRoute);
 app.use("/api/infrastructure", infrastructureRoute);
 app.use("/api/career", careerRoute);
+app.use("/api/eContent", eContentRoute);
 
 mongoose
   .connect(process.env.MONGODB_URI)

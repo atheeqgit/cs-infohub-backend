@@ -5,6 +5,7 @@ import {
   updateDepartment,
   deleteDepartment,
   getAllData,
+  getAllDepartments,
 } from "../controllers/departmentController.js";
 import { authenticate } from "../middlewares/authenticate.js";
 import { authorize } from "../middlewares/authorize.js";
@@ -16,6 +17,7 @@ const router = express.Router();
 // getting the home page data
 router.get("/home/:pathName", getDepartment);
 
+router.get("/getAllDept", getAllDepartments);
 // getting all data of singly type by the department    EG: all faculty belongs to the department ... ect
 router.get("/getAllData/:deptID/:type", getAllData);
 

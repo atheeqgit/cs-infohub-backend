@@ -9,6 +9,7 @@ const ProgramSchema = new Schema({
     required: true,
   },
   aboutProgram: [{ type: String, required: true }],
+  totalSemesters: { type: Number, required: true },
   deptID: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "department",

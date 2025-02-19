@@ -51,6 +51,22 @@ export const getDepartment = async (req, res) => {
   }
 };
 
+export const getAllDepartments = async (req, res) => {
+  try {
+    const departments = await Department.find(
+      {},
+      "pathName deptIcon deptName about"
+    ); // Fetch only required fields
+
+    res.status(200).json({
+      success: true,
+      data: departments,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Error Getting Department: " + err.message });
+  }
+};
+
 export const getAllData = async (req, res) => {
   const { deptID, type } = req.params;
 
@@ -97,10 +113,7 @@ export const getAllData = async (req, res) => {
 };
 
 export const createDepartment = async (req, res) => {
-  console.log("Before try block");
   try {
-    console.log("Entering try block");
-
     const { pathName, deptName, snippetData, about } = req.body;
 
     if (!pathName || !deptName || !snippetData || !about || !about.length) {
@@ -140,7 +153,6 @@ export const createDepartment = async (req, res) => {
       data: newDept,
     });
   } catch (err) {
-    console.log("Inside catch block", err);
     await deleteUploadsIfFailed(req);
     res.status(500).json({
       error: "An error creating department:" + err.message,

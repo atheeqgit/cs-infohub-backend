@@ -30,7 +30,9 @@ const cloudinaryUpload = async (req, res, next) => {
         resource_type: fileType.startsWith("video/") ? "video" : "auto",
       });
 
-      fs.unlinkSync(filePath); // Delete file after upload
+      fs.unlinkSync(filePath);
+      console.log("unsynced file :" + filePath);
+
 
       // Save uploaded file's Cloudinary URL in req.body dynamically
       console.log("uploaded file pID:" + cloudinaryResponse.public_id);

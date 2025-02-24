@@ -17,6 +17,7 @@ const adminSchema = new Schema({
     required: true,
   },
   role: { type: String, enum: ["superAdmin", "admin"], default: "admin" },
+  faculty: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
 });
 

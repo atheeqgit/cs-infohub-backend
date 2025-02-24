@@ -60,6 +60,7 @@ const eContentSchema = new Schema({
 });
 
 eContentSchema.index({
+  title: "text",
   subjectName: "text",
   subjectCode: "text",
   programName: "text",

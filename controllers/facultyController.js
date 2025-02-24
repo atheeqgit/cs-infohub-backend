@@ -13,12 +13,7 @@ export const addFaculty = async (req, res) => {
   const { deptID } = req.params; // Extract department ID
 
   try {
-    if (
-      !req.body.name ||
-      !req.body.designation ||
-      !req.body.education ||
-      !req.body.shift
-    ) {
+    if (!req.body.name || !req.body.designation || !req.body.education) {
       throw new Error("One or more required fields are missing or invalid.");
     }
     // Check if the department exists
@@ -27,7 +22,12 @@ export const addFaculty = async (req, res) => {
 
     const data = await getBodyWithFiles(req);
 
-    const newFaculty = new Faculty({ ...data, deptID });
+    console.log(data, req.cloudinaryFiles);
+    const newFaculty = new Faculty({
+      ...data,
+      deptID,
+      showOnHome: data.showOnHome == "true" ? true : false,
+    });
 
     await newFaculty.save();
 

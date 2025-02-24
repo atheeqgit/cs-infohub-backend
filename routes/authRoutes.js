@@ -4,6 +4,7 @@ import {
   registerAdmin,
   deleteAdmin,
   registerSuperAdmin,
+  getAllAdmins,
 } from "../controllers/authController.js";
 import { authenticate } from "../middlewares/authenticate.js";
 import { authorize } from "../middlewares/authorize.js";
@@ -16,6 +17,13 @@ router.post(
   authenticate,
   authorize(["superAdmin"]),
   registerSuperAdmin
+);
+// Register for superAdmins
+router.get(
+  "/getAllAdmins",
+  authenticate,
+  authorize(["superAdmin"]),
+  getAllAdmins
 );
 
 // login route for both admin and superAdmins

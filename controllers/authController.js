@@ -44,9 +44,24 @@ export const registerSuperAdmin = async (req, res) => {
   }
 };
 
+export const getAllAdmins = async (req, res) => {
+  try {
+    const Admins = await Admin.find({}, "username email role faculty"); // Fetch only required fields
+
+    res.status(200).json({
+      success: true,
+      data: Admins,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Error Getting Department: " + err.message });
+  }
+};
+
 export const loginAdmin = async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    console.log(req.body);
 
     const adminExists = await Admin.findOne({ email });
 
@@ -67,6 +82,8 @@ export const loginAdmin = async (req, res) => {
     res.status(200).json({
       username: adminExists.username,
       email: adminExists.email,
+      role: adminExists.role,
+      faculty: adminExists.faculty ? adminExists.faculty : null,
       token,
     });
   } catch (err) {
@@ -76,7 +93,7 @@ export const loginAdmin = async (req, res) => {
 
 export const registerAdmin = async (req, res) => {
   try {
-    const { username, password, email } = req.body;
+    const { username, password, email, faculty } = req.body;
 
     if (req.admin.role !== "superAdmin") {
       return res.status(403).json({ error: "Permission denied" });
@@ -94,6 +111,7 @@ export const registerAdmin = async (req, res) => {
       username,
       password: hashedPassword,
       role: "admin",
+      faculty: faculty,
     });
 
     await newAdmin.save();

@@ -107,7 +107,7 @@ export const getAllData = async (req, res) => {
     }
 
     res.status(200).json(data);
-  } catch (error) {
+  } catch (err) {
     res.status(500).json({ error: "Error Getting All data: " + err.message });
   }
 };

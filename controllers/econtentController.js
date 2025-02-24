@@ -21,11 +21,76 @@ export const getAllPrograms = async (req, res) => {
   }
 };
 
-export const getAllEcontents = async (req, res) => {
-  const { progID } = req.params;
-  try {
-    const econtents = await Econtent.find({ programId: progID }); // ✅ Correct reference
+// export const getNumberOfEcontents = async (req, res) => {
+//   const { progID } = req.params;
+//   try {
+//     const totEcontents = await Econtent.countDocuments({ programId: progID });
 
+//     res.status(200).json({
+//       success: true,
+//       data: totEcontents,
+//     });
+//   } catch (err) {
+//     res
+//       .status(500)
+//       .json({ error: "Error fetching total E-Contents: " + err.message });
+//   }
+// };
+export const getAllEcontentsBySearch = async (req, res) => {
+  try {
+    const { query, filter, pageNumber, limit } = req.query;
+
+    if (!query || !filter) {
+      return res.status(400).json({ error: "Query and filter are required" });
+    }
+
+    const pageNum = pageNumber ? parseInt(pageNumber) : 1;
+    const pagination = limit ? parseInt(limit) : 10; // Default limit is 2
+
+    const filters = {
+      title: { title: query },
+      subjectCode: { subjectCode: query },
+      subjectName: { subjectName: query },
+      programName: { programName: query },
+    };
+
+    if (!filters[filter]) {
+      return res.status(400).json({ error: "Invalid filter type" });
+    }
+
+    const totalEcontents = await Econtent.countDocuments(filters[filter]);
+
+    const econtents = await Econtent.find(filters[filter])
+      .sort({ title: 1 }) // A-Z
+      .skip((pageNum - 1) * pagination)
+      .limit(pagination);
+
+    res.status(200).json({
+      success: true,
+      data: econtents,
+      totalContents: totalEcontents,
+      currentPage: pageNum,
+      totalPages: Math.ceil(totalEcontents / pagination),
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Error Getting E-Contents: " + err.message });
+  }
+};
+
+export const getAllEcontentsBySem = async (req, res) => {
+  const { progID, sem } = req.params;
+
+  try {
+    const semesterNumber = parseInt(sem); // Convert sem to a number
+
+    if (isNaN(semesterNumber)) {
+      return res.status(400).json({ error: "Invalid semester value" });
+    }
+
+    const econtents = await Econtent.find({
+      programId: progID,
+      semester: sem,
+    }).sort();
     res.status(200).json({
       success: true,
       data: econtents,

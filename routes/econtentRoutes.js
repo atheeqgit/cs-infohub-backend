@@ -4,7 +4,9 @@ import {
   updateEcontent,
   deleteEcontent,
   getAllPrograms,
-  getAllEcontents,
+  getAllEcontentsBySem,
+  // getNumberOfEcontents,
+  getAllEcontentsBySearch,
 } from "../controllers/econtentController.js";
 import { authenticate } from "../middlewares/authenticate.js";
 import { authorize } from "../middlewares/authorize.js";
@@ -16,8 +18,11 @@ const router = express.Router();
 // Create e-content route
 router.get("/getAll-programs/:deptID", getAllPrograms);
 
-// Create e-content route
-router.get("/getAll-econtents/:progID", getAllEcontents);
+router.get("/getAll-econtents/:progID/:sem", getAllEcontentsBySem);
+// search
+router.get("/global-search/e-content", getAllEcontentsBySearch);
+
+// router.get("/getTotal-econtents/:progID", getNumberOfEcontents);
 // Create e-content route
 router.post(
   "/create-eContent",

@@ -215,7 +215,6 @@ export const deleteDepartment = async (req, res) => {
     // Function to extract and delete images
     const deleteRelatedImages = async (items, fields) => {
       for (const item of items) {
-        console.log(item, fields);
         await deleteCloudFiles(fields, item);
       }
     };

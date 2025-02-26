@@ -40,28 +40,29 @@ export const getAllEcontentsBySearch = async (req, res) => {
   try {
     const { query, filter, pageNumber, limit } = req.query;
 
-    if (!query || !filter) {
+    const decodedQuery = decodeURIComponent(query);
+
+    if (!decodedQuery || !filter) {
       return res.status(400).json({ error: "Query and filter are required" });
     }
 
     const pageNum = pageNumber ? parseInt(pageNumber) : 1;
-    const pagination = limit ? parseInt(limit) : 10; // Default limit is 2
+    const pagination = limit ? parseInt(limit) : 10; // Default limit is 10
 
-    const filters = {
-      title: { title: query },
-      subjectCode: { subjectCode: query },
-      subjectName: { subjectName: query },
-      programName: { programName: query },
-    };
-
-    if (!filters[filter]) {
+    const validFilters = ["title", "subjectCode", "subjectName", "programName"];
+    if (!validFilters.includes(filter)) {
       return res.status(400).json({ error: "Invalid filter type" });
     }
 
-    const totalEcontents = await Econtent.countDocuments(filters[filter]);
+    const regexFilter = { [filter]: { $regex: decodedQuery, $options: "i" } }; // Case-insensitive partial match
 
-    const econtents = await Econtent.find(filters[filter])
-      .sort({ title: 1 }) // A-Z
+    // Count total documents matching search query
+    const totalEcontents = await Econtent.countDocuments(regexFilter);
+
+    // Find e-contents with pagination
+    const econtents = await Econtent.find(regexFilter)
+      .collation({ locale: "en", strength: 2 })
+      .sort({ title: 1 }) // Sort A-Z by title
       .skip((pageNum - 1) * pagination)
       .limit(pagination);
 
@@ -119,8 +120,15 @@ export const addEcontent = async (req, res) => {
     const data = await getBodyWithFilesArray(req);
 
     // Create new e-content entry
-    const newEcontent = new Econtent(data);
+    let newEcontent = new Econtent(data);
+    // Create new e-content entry
 
+    // Ensure metadata is parsed JSON (if it's a string)
+    if (typeof newEcontent.metadata === "string") {
+      newEcontent.metadata = JSON.parse(newEcontent.metadata);
+    }
+
+    // Save to database
     await newEcontent.save();
 
     res.status(201).json({

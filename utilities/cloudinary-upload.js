@@ -31,11 +31,8 @@ const cloudinaryUpload = async (req, res, next) => {
       });
 
       fs.unlinkSync(filePath);
-      console.log("unsynced file :" + filePath);
-
-
-      // Save uploaded file's Cloudinary URL in req.body dynamically
-      console.log("uploaded file pID:" + cloudinaryResponse.public_id);
+      // console.log("unsynced file :" + filePath);
+      // console.log("uploaded file pID:" + cloudinaryResponse.public_id);
       uploadedFiles.push({
         fieldName: file.fieldname, // Example: "imgSrc", "pdfLink"
         url: cloudinaryResponse.secure_url,

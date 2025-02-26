@@ -22,7 +22,6 @@ export const addFaculty = async (req, res) => {
 
     const data = await getBodyWithFiles(req);
 
-    console.log(data, req.cloudinaryFiles);
     const newFaculty = new Faculty({
       ...data,
       deptID,

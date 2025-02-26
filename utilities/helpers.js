@@ -2,7 +2,6 @@ import { deleteFromCloudinary } from "./deleteCloudFiles.js";
 
 export const getBodyWithFiles = (req) => {
   const cloudFilesLinks = req.cloudinaryFiles;
-  console.log(cloudFilesLinks);
   let uploadedFiles = {};
 
   if (cloudFilesLinks?.length > 0) {

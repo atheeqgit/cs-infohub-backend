@@ -1,6 +1,0 @@
-learn unit testing
-
-learn about file uploads and also via backend , or just store the files
-find out the database to store the files 
-
-learn about cache and caching via redis
